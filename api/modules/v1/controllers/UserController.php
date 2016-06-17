@@ -4,7 +4,6 @@ namespace api\modules\v1\controllers;
 
 use Yii;
 use api\modules\v1\models\User;
-use yii\helpers\FileHelper;
 use yii\rest\ActiveController;
 
 
@@ -35,8 +34,7 @@ class UserController extends ActiveController
     public function actionLogin()
     {
         $result = false;
-        $token = '';
-        $accessToken = Yii::$app->request->get('access_token');
+        $accessToken = Yii::$app->request->get('access-token');
         if ($accessToken) {
             if (User::findIdentityByAccessToken($accessToken)) {
                 $result = true;
@@ -53,7 +51,7 @@ class UserController extends ActiveController
         if ($result) {
             return [
                 'result' => '登录成功',
-                'access_token' => $accessToken,
+                'access-token' => $accessToken,
             ];
         } else {
             return [

@@ -10,7 +10,6 @@ namespace api\modules\v1\models;
 
 
 use common\models\User as commonUser;
-use yii\base\Security;
 use yii\behaviors\TimestampBehavior;
 
 class User extends commonUser {
@@ -24,7 +23,7 @@ class User extends commonUser {
      */
     public static function tableName()
     {
-        return '{{%admin_user}}';
+        return '{{%user}}';
     }
     /**
      * @inheritdoc
@@ -84,9 +83,9 @@ class User extends commonUser {
             $this->password_hash = \Yii::$app->security->generatePasswordHash($this->password_hash);
         return true;
     }*/
-    public function getInfo(){
+    /*public function getInfo(){
         return $this->hasOne(AdminInfo::className(), ['id' => 'id']);
-    }
+    }*/
     /**
      * 关联获取角色
      * @return \yii\db\ActiveQuery
