@@ -3,11 +3,11 @@
 return [
     'db'=>[
         'class' => 'yii\db\Connection',
-        'dsn' => 'mysql:host=localhost;dbname=github_ace_1_1',
+        'dsn' => 'mysql:host=mysql;dbname=dbname',
         'username' => 'root',
         'password' => '123456',
         'charset' => 'utf8',
-        'tablePrefix'=>'xw_'
+        'tablePrefix'=>'zc_'
     ],
 ];
 ?>

@@ -5,10 +5,24 @@ namespace api\modules\v1\controllers;
 use Yii;
 use api\modules\v1\models\User;
 use yii\rest\ActiveController;
-
+use yii\filters\Cors;
+use yii\helpers\ArrayHelper;
 
 class UserController extends ActiveController
 {
+    public function behaviors()
+    {
+        return ArrayHelper::merge([
+            [
+                'class' => Cors::className(),
+                'cors' => [
+                    //'Origin' => ['http://localhost'],
+                    'Origin' => ['*'],
+                    'Access-Control-Request-Method' => ['GET', 'HEAD', 'OPTIONS'],
+                ],
+            ],
+        ], parent::behaviors());
+    }
     /*public function afterAction($action, $result)
     {
         $result = parent::afterAction($action, $result);

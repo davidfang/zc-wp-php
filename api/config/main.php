@@ -24,7 +24,7 @@ return [
         'request'=>[
             'enableCsrfValidation'=>false,
         ],
-        'response' => [
+        /*'response' => [
             'class' => 'yii\web\Response',
             'on beforeSend' => function ($event) {
                 $response = $event->sender;
@@ -36,7 +36,7 @@ return [
                         $response->statusCode = 200;
                     }
             },
-        ],
+        ],*/
         'user' => [
             'identityClass' => 'api\modules\v1\models\User',
             'enableSession' => false,
@@ -68,6 +68,8 @@ return [
             'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
+                '<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>',
+                '<controller:\w+>/<action:\w+>'=>'v1/<controller>/<action>',
                 ['class' => 'yii\rest\UrlRule',
                     'controller' => 'v1/post',
                     'pluralize'=>false],
@@ -78,11 +80,11 @@ return [
                     'pluralize'=>false],
             ],
         ],
-        'authManager'=>[
+        /*'authManager'=>[
             'class'=>'yii\rbac\DbManager',
             'defaultRoles' => ['guest', 'user'],
             //'cache' => 'yii\caching\FileCache',
-        ],
+        ],*/
     ],
     /*'as authenticator' => [
         'class' => 'api\common\QueryParamAuth',

@@ -1,5 +1,6 @@
 <?php
 $db = require(__DIR__.'/db.php');
+$redis = require(__DIR__.'/redis.php');
 return [
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
     'components' => [
@@ -15,5 +16,6 @@ return [
             'useFileTransport' => true,
         ],
         'db'=>$db['db'],
+        'redis'=>$redis['redis'],
     ],
 ];
