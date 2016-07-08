@@ -9,7 +9,7 @@ $params = array_merge(
 return [
     'id' => 'app-api',
     'basePath' => dirname(__DIR__),
-    'language'=>'zh-CN',
+    'language' => 'zh-CN',
     'controllerNamespace' => 'api\controllers',
     'name' => 'api',
     'bootstrap' => ['log'],
@@ -21,8 +21,8 @@ return [
         ],
     ],
     'components' => [
-        'request'=>[
-            'enableCsrfValidation'=>false,
+        'request' => [
+            'enableCsrfValidation' => false,
         ],
         /*'response' => [
             'class' => 'yii\web\Response',
@@ -65,19 +65,20 @@ return [
         ],*/
         'urlManager' => [
             'enablePrettyUrl' => true,
-            'enableStrictParsing' => true,
+            //'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
-                '<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>',
-                '<controller:\w+>/<action:\w+>'=>'v1/<controller>/<action>',
+                '<module:\w+>/<controller:\w+>/<action:\w+>' => '<module>/<controller>/<action>',
+                '<controller:\w+>/<action:\w+>' => 'v1/<controller>/<action>',
                 ['class' => 'yii\rest\UrlRule',
                     'controller' => 'v1/post',
-                    'pluralize'=>false],
+                    'pluralize' => false],
                 ['class' => 'yii\rest\UrlRule',
                     'controller' => 'v1/user',
                     'extraPatterns' => [
-                        'GET,POST login' => 'login',],
-                    'pluralize'=>false],
+                        'GET,POST login' => 'login',
+                    ],
+                    'pluralize' => false],
             ],
         ],
         /*'authManager'=>[

@@ -42,7 +42,15 @@ class User extends commonUser {
     {
         return [
             [['username', 'password'], 'required','on'=>['login']],
-            [['username', 'password','email'], 'required','on'=>['create']],
+            //[['username', 'password','email'], 'required','on'=>['create']],
+            [['username', 'password','mobile'], 'required','on'=>['create']],
+            ['mobile','required','on'=>['register']],
+            ['mobile', 'integer'],
+            ['mobile','match','pattern'=>'/^1[3|4|5|7|8][0-9]{9}$/','message'=>'{attribute}必须为1开头的11位纯数字'],
+            ['mobile', 'string', 'min'=>11,'max' => 11],
+            ['mobile', 'unique', 'targetClass' => '\common\models\User', 'message' => '该手机号码已经被占用.'],
+
+
             ['email','email'],
             [['password_repeat'],'required','on'=>['create','update','chgpwd']],
             [['oldpassword','password_repeat'],'required','on'=>['chgpwd','update']],
@@ -50,6 +58,14 @@ class User extends commonUser {
             ['oldpassword','validateOldPassword','on' =>'chgpwd'],
             [['username', 'password', 'userphoto'], 'string', 'max' => 255],
             ['password_repeat','compare','compareAttribute'=>'password']
+        ];
+    }
+    public function scenarios()
+    {
+        return [
+            'login' => ['username', 'password'],
+            'create' => ['username', 'mobile', 'password'],
+            'register' => [ 'mobile'],'update','chgpwd'
         ];
     }
     public function validateOldPassword()
@@ -185,5 +201,12 @@ class User extends commonUser {
         }
 
         return !$this->getIsGuest();
+    }
+
+    /**
+     * 检查手机
+     */
+    public function checkMobil(){
+
     }
 }

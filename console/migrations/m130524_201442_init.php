@@ -16,6 +16,7 @@ class m130524_201442_init extends Migration
         /*$this->createTable('{{%user}}', [
             'id' => Schema::TYPE_PK,
             'username' => Schema::TYPE_STRING . ' NOT NULL',
+            'mobile' => Schema::TYPE_STRING . ' NOT NULL',
             'auth_key' => Schema::TYPE_STRING . '(32) NOT NULL',
             'password_hash' => Schema::TYPE_STRING . ' NOT NULL',
             'password_reset_token' => Schema::TYPE_STRING,
@@ -29,6 +30,7 @@ class m130524_201442_init extends Migration
             'id' => Schema::TYPE_PK,
             'fromusername' => Schema::TYPE_STRING . '  NULL',
             'username' => Schema::TYPE_STRING . ' NOT NULL',
+            'mobile' => Schema::TYPE_STRING . ' NOT NULL',
             'access_token' => Schema::TYPE_STRING . '  NULL',
             'auth_key' => Schema::TYPE_STRING . '(32) NOT NULL',
             'password_hash' => Schema::TYPE_STRING . ' NOT NULL',
