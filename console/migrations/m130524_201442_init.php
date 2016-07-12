@@ -50,9 +50,9 @@ class m130524_201442_init extends Migration
         $auth_key2 = $Security->generateRandomString();
         $access_token2 = $Security->generateRandomString();
         $time = time();
-        $sql = "INSERT INTO {{%user}} (`id`, `username`, `access_token`, `password_hash`,`auth_key`,`email`,`created_at`,`updated_at`) VALUES
-(1, 'test1', '$access_token1', '$pw1','$auth_key1','test1@abc.com',$time,$time),
-(2, 'test2', '$access_token2', '$pw2','$auth_key2','test2@abc.com',$time,$time);";
+        $sql = "INSERT INTO {{%user}} (`id`, `username`,`mobile`, `access_token`, `password_hash`,`auth_key`,`email`,`created_at`,`updated_at`) VALUES
+(1, 'test1','13112345678', '$access_token1', '$pw1','$auth_key1','test1@abc.com',$time,$time),
+(2, 'test2','13112345679', '$access_token2', '$pw2','$auth_key2','test2@abc.com',$time,$time);";
         $this->execute($sql);
     }
 
