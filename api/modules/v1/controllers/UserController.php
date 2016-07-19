@@ -69,7 +69,7 @@ class UserController extends ActiveController
     public function actionLogin()
     {
         $result = false;
-        $accessToken = Yii::$app->request->get('access-token');
+        $accessToken = Yii::$app->request->get('access_token');
         if ($accessToken) {
             if (User::findIdentityByAccessToken($accessToken)) {
                 $result = true;
