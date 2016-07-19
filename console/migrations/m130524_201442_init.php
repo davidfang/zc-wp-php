@@ -35,7 +35,7 @@ class m130524_201442_init extends Migration
             'auth_key' => Schema::TYPE_STRING . '(32) NOT NULL',
             'password_hash' => Schema::TYPE_STRING . ' NOT NULL',
             'password_reset_token' => Schema::TYPE_STRING,
-            'email' => Schema::TYPE_STRING . ' NOT NULL',
+            'email' => Schema::TYPE_STRING . '  NULL',
 
             'status' => Schema::TYPE_SMALLINT . ' NOT NULL DEFAULT 10',
             'userphoto' => Schema::TYPE_STRING . '(64)  NULL DEFAULT "nophoto.jpg"',

@@ -37,6 +37,12 @@ return [
                     }
             },
         ],*/
+        'response' => [
+            'class' => 'yii\web\Response',
+            'format' => yii\web\Response::FORMAT_JSON,
+            'charset' => 'UTF-8',
+            // ...
+        ],
         'user' => [
             'identityClass' => 'api\modules\v1\models\User',
             'enableSession' => false,

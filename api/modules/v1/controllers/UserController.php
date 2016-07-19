@@ -2,6 +2,7 @@
 
 namespace api\modules\v1\controllers;
 
+use api\modules\v1\models\MobileVerification;
 use Yii;
 use api\modules\v1\models\User;
 use yii\rest\ActiveController;
@@ -19,7 +20,7 @@ class UserController extends ActiveController
                 'cors' => [
                     // restrict access to
                     'Origin' => ['http://node.dev', 'https://node.dev'],
-                    'Access-Control-Request-Method' => ['POST','GET', 'PUT'],
+                    'Access-Control-Request-Method' => ['POST', 'GET', 'PUT'],
                     // Allow only POST and PUT methods
                     'Access-Control-Request-Headers' => ['X-Wsse'],
                     // Allow only headers 'X-Wsse'
@@ -53,7 +54,15 @@ class UserController extends ActiveController
      *     access_token
      * 返回：
      * "result": "success", //failed
+     * "status":true ,//false
+     * "msg":"登录成功",//
+     * "data":{
      * "access_token": "xxxxxxxxxxxxxxxxxxxx"
+     * }
+     *
+     * "error":{
+     *
+     * }
      *
      * @return array
      */
@@ -75,19 +84,53 @@ class UserController extends ActiveController
         }
 
         if ($result) {
-            return [
-                'result' => '登录成功',
-                'access-token' => $accessToken,
+            return ['status' => true,
+                'msg' => '登录成功',
+                'data' => [
+                    'access-token' => $accessToken,
+                ]
             ];
         } else {
-            return [
-                'result' => '登录失败',
-            ];
+            return ['status' => false, 'msg' => '登录失败'];
         }
     }
-public function actionLoginhost(){
-    return ['status'=>true,'msg'=>'验证码发送成功,请查收手机短信。'];
-}
+
+    /**
+     * 登录
+     * method:POST
+     *  参数：
+     *  POST:
+     *     mobile
+     *     password
+     * 返回：
+     * "result": "success", //failed
+     * "access_token": "xxxxxxxxxxxxxxxxxxxx"
+     *
+     * @return array
+     */
+    public function actionSignIn()
+    {
+        $result = ['status' => false, 'msg' => '登录失败',];
+        $userModel = new User(['scenario' => 'signIn']);
+        if ($userModel->load(Yii::$app->request->post(), '') && $userModel->validate()) {
+            $user = User::findByMobile(Yii::$app->request->post('mobile'));
+            if (!$user) {
+                $result['error'] = ['mobile' => '账号不存在'];
+            } else {
+                if ($user->validatePassword(Yii::$app->request->post('password'))) {
+                    $user->generateAccessToken();
+                    $accessToken = $user->access_token;
+                    $result = ['status' => true, 'msg' => '登录成功', 'data' => ['access_token' => $accessToken]];
+                } else {
+                    $result['error'] = ['password' => '密码错误'];
+                }
+            }
+        } else {//手机号 密码输入错误
+            $result['error'] = $userModel->getFirstErrors();
+        }
+        return $result;
+    }
+
     /**
      * 获取手机验证码
      * @param $mobile
@@ -97,11 +140,30 @@ public function actionLoginhost(){
     {
         $userModel = new \api\modules\v1\models\User();
         $userModel->scenario = 'register';
-        if($userModel->validate(['mobile'=>$mobile])){
-            return ['status'=>true,'msg'=>'验证码发送成功,请查收手机短信。'];
-        }else{
-            return ['status'=>false,'msg'=>$userModel->getFirstError('mobile')];
+        $userModel->mobile = $mobile;
+        if ($userModel->validate()) {
+            $code = MobileVerification::generator($mobile);
+            return ['status' => true, 'msg' => '验证码发送成功,请查收手机短信。', 'code' => $code];
+        } else {
+            return ['status' => false, 'msg' => $userModel->getFirstError('mobile')];
         }
     }
 
+    /**
+     * 用户注册
+     * @return array
+     */
+    public function actionSignUp()
+    {
+        $userModel = new User(['scenario' => 'create']);
+        if ($userModel->load(Yii::$app->request->post(), '')) {
+            if ($userModel->validate() && $userModel->addUser()) {
+                return ['status' => true, 'msg' => '注册成功。', 'data' => ['access_token' => $userModel->access_token]];
+            } else {
+                return ['status' => false, 'msg' => '注册失败。', 'error' => $userModel->getFirstErrors()];
+            }
+        } else {
+            return ['status' => false, 'msg' => '注册失败。', 'error' => $userModel->getErrors()];
+        }
+    }
 }

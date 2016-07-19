@@ -17,6 +17,7 @@ class User extends commonUser {
     public $oldpassword;
     public $password_repeat;
     public $verifyCode;
+    public $code;
     //public $access_token;
     /**
      * @inheritdoc
@@ -42,13 +43,15 @@ class User extends commonUser {
     {
         return [
             [['username', 'password'], 'required','on'=>['login']],
+            [['mobile', 'password'], 'required','on'=>['signIn']],
             //[['username', 'password','email'], 'required','on'=>['create']],
-            [['username', 'password','mobile'], 'required','on'=>['create']],
+            [['username', 'password','mobile','code'], 'required','on'=>['create']],
+            ['code', 'validateMobileCode','on'=>['create']],
             ['mobile','required','on'=>['register']],
             ['mobile', 'integer'],
             ['mobile','match','pattern'=>'/^1[3|4|5|7|8][0-9]{9}$/','message'=>'{attribute}必须为1开头的11位纯数字'],
             ['mobile', 'string', 'min'=>11,'max' => 11],
-            ['mobile', 'unique', 'targetClass' => '\common\models\User', 'message' => '该手机号码已经被占用.'],
+            ['mobile', 'unique',  'message' => '该手机号码已经被占用。','on'=>['register']],
 
 
             ['email','email'],
@@ -62,18 +65,36 @@ class User extends commonUser {
     }
     public function scenarios()
     {
-        return [
+        return array_merge(parent::scenarios(),[
             'login' => ['username', 'password'],
-            'create' => ['username', 'mobile', 'password'],
+            'signIn' => ['mobile', 'password'],
+            'create' => ['username', 'mobile', 'password','code'],
             'register' => [ 'mobile'],'update','chgpwd'
-        ];
+        ]);
     }
+
+    /**
+     * 老密码校验
+     */
     public function validateOldPassword()
     {
         $user = self::findOne($this->id);
 
         if (!$user || !$user->validatePassword($this->oldpassword)) {
             $this->addError('oldpassword', '原始密码错误');
+        }
+    }
+
+    /**
+     * 手机和验证码校验
+     * @param $attribute
+     * @param $params
+     */
+    public function validateMobileCode($attribute, $params)
+    {
+        $mobileVerification = MobileVerification::checkCode($this->mobile,$this->$attribute);
+        if (!$mobileVerification) {
+            $this->addError($attribute, '手机验证码不对。');
         }
     }
     /**
@@ -84,6 +105,8 @@ class User extends commonUser {
         return [
             'id' => 'ID',
             'username' => '用户名',
+            'mobile' => '手机',
+            'code' => '手机验证码',
             'access_token' ,
             'oldpassword' => '原密码',
             'password' => '密码',
@@ -110,9 +133,25 @@ class User extends commonUser {
     {
         return $this->hasMany(AuthAssignment::className(),['user_id'=>'id']);
     }
-    public static function findByusername($username)
+
+    /**
+     * 根据用户名查找用户
+     * @param string $username
+     * @return array|null|\yii\db\ActiveRecord
+     */
+    public static function findByUsername($username)
     {
         return static::find()->where('username=:u',[':u'=>$username])->one();
+    }
+
+    /**
+     * 根据手机号查找用户
+     * @param $username
+     * @return array|null|\yii\db\ActiveRecord
+     */
+public static function findByMobile($mobile)
+    {
+        return static::find()->where('mobile=:u',[':u'=>$mobile])->one();
     }
 
     /**
@@ -124,6 +163,7 @@ class User extends commonUser {
             $this->setPassword($this->password);
             $this->generateAuthKey();
             if ($this->save(false)) {
+                $this->generateAccessToken();
                 return $this;
             }
         }
@@ -203,10 +243,4 @@ class User extends commonUser {
         return !$this->getIsGuest();
     }
 
-    /**
-     * 检查手机
-     */
-    public function checkMobil(){
-
-    }
 }
