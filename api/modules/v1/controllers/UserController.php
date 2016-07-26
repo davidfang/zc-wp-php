@@ -166,4 +166,19 @@ class UserController extends ActiveController
             return ['status' => false, 'msg' => '注册失败。', 'error' => $userModel->getErrors()];
         }
     }
+
+    public function actionGetAmount()
+    {
+        $userInfo = Yii::$app->user->identity;
+        return ['status' => true, 'msg' => 'ok', 'data' => [
+            'avatar' => Yii::$app->params['imgHost'].'/images/defaultAvatar.png',//头像
+            'username' => $userInfo['username'],//用户名
+            'amount' => 10000,//账户余额
+            'principal' => 10,//本金
+            'income' => 100//收益
+        ]];
+
+
+    }
+
 }

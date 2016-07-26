@@ -71,6 +71,7 @@ class DataController extends Controller
       ];
   }
     public function actionIndex($stock,$time = 'now'){
+        Yii::$app->response->format = yii\web\Response::FORMAT_RAW;
         $redis = Yii::$app->redis;
         $key = $stock.'-realTime-'.$time;
         //$result1 = $redis->executeCommand('ZREVRANGE',['zset-sliver-realTime-M1',0,30]);
@@ -82,6 +83,7 @@ class DataController extends Controller
         foreach($result as $item){
             echo $item ."\r\n";
         }
+       // die('');
         //return $result;
     }
 }

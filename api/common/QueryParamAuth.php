@@ -20,7 +20,10 @@ class QueryParamAuth extends YiiQueryParamAuth {
      * 默认允许访问的路由
      */
     public $allowActions = [];
-
+    /**
+     * @var string the parameter name for passing the access token
+     */
+    public $tokenParam = 'access_token';
     /**
      * 授权验证
      * @param \yii\web\User $user
@@ -35,7 +38,7 @@ class QueryParamAuth extends YiiQueryParamAuth {
         if (is_string($accessToken)) {
             $identity = $user->loginByAccessToken($accessToken, get_class($this));
             if ($identity !== null) {
-
+                return $identity;//先不做权限验证，只进行登录验证
 
 
 
@@ -149,6 +152,8 @@ class QueryParamAuth extends YiiQueryParamAuth {
 
 
                 throw new UnauthorizedHttpException('对不起，你无权访问',200);
+            }else{
+                throw new UnauthorizedHttpException('请登录后访问',200);
             }
         }
         if ($accessToken !== null) {

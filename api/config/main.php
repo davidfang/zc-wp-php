@@ -93,15 +93,16 @@ return [
             //'cache' => 'yii\caching\FileCache',
         ],*/
     ],
-    /*'as authenticator' => [
+    'as authenticator' => [
         'class' => 'api\common\QueryParamAuth',
         'allowActions' => [
             '/',
             '/v1/post',
             '/v1/post/index',
+            '/v1/post/index',
 
         ]
-    ],*/
+    ],
     /*'as access' => [
         'class' => 'zc\rbac\components\AccessControl',
         'allowActions' => [
