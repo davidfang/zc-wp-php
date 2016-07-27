@@ -12,7 +12,8 @@ namespace api\modules\v1\models;
 use common\models\User as commonUser;
 use yii\behaviors\TimestampBehavior;
 
-class User extends commonUser {
+class User extends commonUser
+{
     public $password;
     public $oldpassword;
     public $password_repeat;
@@ -26,6 +27,7 @@ class User extends commonUser {
     {
         return '{{%user}}';
     }
+
     /**
      * @inheritdoc
      */
@@ -42,34 +44,35 @@ class User extends commonUser {
     public function rules()
     {
         return [
-            [['username', 'password'], 'required','on'=>['login']],
-            [['mobile', 'password'], 'required','on'=>['signIn']],
+            [['username', 'password'], 'required', 'on' => ['login']],
+            [['mobile', 'password'], 'required', 'on' => ['signIn']],
             //[['username', 'password','email'], 'required','on'=>['create']],
-            [['username', 'password','mobile','code'], 'required','on'=>['create']],
-            ['code', 'validateMobileCode','on'=>['create']],
-            ['mobile','required','on'=>['register']],
+            [['username', 'password', 'mobile', 'code'], 'required', 'on' => ['create']],
+            ['code', 'validateMobileCode', 'on' => ['create']],
+            ['mobile', 'required', 'on' => ['register']],
             ['mobile', 'integer'],
-            ['mobile','match','pattern'=>'/^1[3|4|5|7|8][0-9]{9}$/','message'=>'{attribute}必须为1开头的11位纯数字'],
-            ['mobile', 'string', 'min'=>11,'max' => 11],
-            ['mobile', 'unique',  'message' => '该手机号码已经被占用。','on'=>['register']],
+            ['mobile', 'match', 'pattern' => '/^1[3|4|5|7|8][0-9]{9}$/', 'message' => '{attribute}必须为1开头的11位纯数字'],
+            ['mobile', 'string', 'min' => 11, 'max' => 11],
+            ['mobile', 'unique', 'message' => '该手机号码已经被占用。', 'on' => ['register']],
 
 
-            ['email','email'],
-            [['password_repeat'],'required','on'=>['create','update','chgpwd']],
-            [['oldpassword','password_repeat'],'required','on'=>['chgpwd','update']],
+            ['email', 'email'],
+            [['password_repeat'], 'required', 'on' => ['create', 'update', 'chgpwd']],
+            [['oldpassword', 'password_repeat'], 'required', 'on' => ['chgpwd', 'update']],
             //['verifyCode','captcha','on'=>['create','chgpwd']],//
-            ['oldpassword','validateOldPassword','on' =>'chgpwd'],
+            ['oldpassword', 'validateOldPassword', 'on' => 'chgpwd'],
             [['username', 'password', 'userphoto'], 'string', 'max' => 255],
-            ['password_repeat','compare','compareAttribute'=>'password']
+            ['password_repeat', 'compare', 'compareAttribute' => 'password']
         ];
     }
+
     public function scenarios()
     {
-        return array_merge(parent::scenarios(),[
+        return array_merge(parent::scenarios(), [
             'login' => ['username', 'password'],
             'signIn' => ['mobile', 'password'],
-            'create' => ['username', 'mobile', 'password','code'],
-            'register' => [ 'mobile'],'update','chgpwd'
+            'create' => ['username', 'mobile', 'password', 'code'],
+            'register' => ['mobile'], 'update', 'chgpwd'
         ]);
     }
 
@@ -92,11 +95,12 @@ class User extends commonUser {
      */
     public function validateMobileCode($attribute, $params)
     {
-        $mobileVerification = MobileVerification::checkCode($this->mobile,$this->$attribute);
+        $mobileVerification = MobileVerification::checkCode($this->mobile, $this->$attribute);
         if (!$mobileVerification) {
             $this->addError($attribute, '手机验证码不对。');
         }
     }
+
     /**
      * @inheritdoc
      */
@@ -107,13 +111,13 @@ class User extends commonUser {
             'username' => '用户名',
             'mobile' => '手机',
             'code' => '手机验证码',
-            'access_token' ,
+            'access_token',
             'oldpassword' => '原密码',
             'password' => '密码',
-            'password_repeat'=>'重复密码',
-            'verifyCode'=>'验证码',
-            'email'=>'邮箱',
-            'userphoto'=>'用户头像',
+            'password_repeat' => '重复密码',
+            'verifyCode' => '验证码',
+            'email' => '邮箱',
+            'userphoto' => '用户头像',
         ];
     }
     /*public function beforeSave($insert)
@@ -131,7 +135,7 @@ class User extends commonUser {
      */
     public function getRoles()
     {
-        return $this->hasMany(AuthAssignment::className(),['user_id'=>'id']);
+        return $this->hasMany(AuthAssignment::className(), ['user_id' => 'id']);
     }
 
     /**
@@ -141,7 +145,7 @@ class User extends commonUser {
      */
     public static function findByUsername($username)
     {
-        return static::find()->where('username=:u',[':u'=>$username])->one();
+        return static::find()->where('username=:u', [':u' => $username])->one();
     }
 
     /**
@@ -149,17 +153,18 @@ class User extends commonUser {
      * @param $username
      * @return array|null|\yii\db\ActiveRecord
      */
-public static function findByMobile($mobile)
+    public static function findByMobile($mobile)
     {
-        return static::find()->where('mobile=:u',[':u'=>$mobile])->one();
+        return static::find()->where('mobile=:u', [':u' => $mobile])->one();
     }
 
     /**
      * 添加用户
      * @return $this|null
      */
-    public function addUser(){
-        if($this->validate()) {
+    public function addUser()
+    {
+        if ($this->validate()) {
             $this->setPassword($this->password);
             $this->generateAuthKey();
             if ($this->save(false)) {
@@ -183,13 +188,14 @@ public static function findByMobile($mobile)
         }
         $expire = \Yii::$app->params['user.AccessTokenExpire'];
         $parts = explode('_', $token);
-        $timestamp = (int) end($parts);
-        if($timestamp + $expire >= time()) {
+        $timestamp = (int)end($parts);
+        if ($timestamp + $expire >= time()) {
             return static::findOne(['access_token' => $token]);
-        }else{
+        } else {
             return null;
         }
     }
+
     /**
      * Generates new access_token
      */
