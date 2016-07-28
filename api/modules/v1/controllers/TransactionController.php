@@ -26,7 +26,20 @@ class TransactionController extends ActiveController
         $userInfo = Yii::$app->user->identity;
         $post = Yii::$app->request->post();
         $post['user_id'] = Yii::$app->user->identity->id;
+
         if ($transactionModel->load($post,'') && $transactionModel->validate()) {
+
+
+            $price = 0;
+            $redis = Yii::$app->redis;
+            $post['goods_item'];
+        $key = $stock.'-realTime-'.$time;
+        //$result1 = $redis->executeCommand('ZREVRANGE',['zset-sliver-realTime-M1',0,30]);
+        $result1 = $redis->executeCommand('ZREVRANGE',[$key.'-zset',0,30]);
+        $post['price'] = $price;
+
+
+
             $transactionModel->save();
             $return['status'] = true;
             $return['msg'] = '交易成功';

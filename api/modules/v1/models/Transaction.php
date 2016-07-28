@@ -48,7 +48,10 @@ class Transaction extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'goods_item', 'price', 'quantity'], 'required'],
+            [['user_id', 'goods_item', 'quantity'], 'required'],
+            [ 'price', 'required','when'=>function($model){
+                return $model->type == 2;
+            }],
             [['user_id', 'created_at', 'close_at', 'updated_at'], 'integer'],
             [['goods_item', 'quantity', 'stop', ], 'number'],
             ['type', 'in', 'range' =>Yii::$app->params['transaction.rang']['type'] ],
@@ -71,7 +74,7 @@ class Transaction extends \yii\db\ActiveRecord
             'id',// 'ID',
             'user_id',// '用户ID',
             'goods_item',// '产品编码',
-            'type',// '类型：1即进单，2限价单',
+            'type',// '类型：1即时单，2限价单',
             'direction',// '方向：1买涨2买跌',
             'price',// '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity',// '数量',
@@ -94,7 +97,7 @@ class Transaction extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => '用户ID',
             'goods_item' => '产品编码',
-            'type' => '类型：1即进单，2限价单',
+            'type' => '类型：1即时单，2限价单',
             'direction' => '方向：1买涨2买跌',
             'price' => '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity' => '数量',

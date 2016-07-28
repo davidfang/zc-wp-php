@@ -12,37 +12,37 @@ return [
         'close_type' => [0, 1, 2, 3],// '关闭类型：0未关闭，1用户人为关闭，2止损止盈触发关闭，3爆仓关闭',
     ],
     'goods_items' => [//交易产品信息
-        '白银' => [ [
+        '白银' => [ 1=>[
             'goods_item' => 1,
             'name' => '白银',
             'size' => 10,
             'unit' => 'g',
             'change' => 0.5],
-             [
+             2=>[
                 'goods_item' => 2,
                 'name' => '白银',
                 'size' => 100,
                 'unit' => 'g',
                 'change' => 5],
-             [
+             3=>[
                 'goods_item' => 3,
                 'name' => '白银',
                 'size' => 1000,
                 'unit' => 'g',
                 'change' => 50]],
-        '原油' => [ [
+        '原油' => [ 4=>[
             'goods_item' => 4,
             'name' => '原油',
             'size' => 10,
             'unit' => 'g',
             'change' => 0.5],
-             [
+             5=>[
                 'goods_item' => 5,
                 'name' => '原油',
                 'size' => 100,
                 'unit' => 'g',
                 'change' => 5],
-             [
+             6=>[
                 'goods_item' => 6,
                 'name' => '原油',
                 'size' => 1000,
