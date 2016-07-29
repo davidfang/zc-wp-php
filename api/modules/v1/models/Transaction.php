@@ -15,7 +15,10 @@ use yii\behaviors\TimestampBehavior;
  * @property string $direction
  * @property double $price
  * @property integer $quantity
- * @property integer $stop
+ * @property integer $amount
+ * @property integer $use_funds
+ * @property integer $stop_loss
+ * @property integer $stop_profit
  * @property string $status
  * @property string $close_type
  * @property integer $created_at
@@ -49,16 +52,17 @@ class Transaction extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'goods_item', 'quantity'], 'required'],
-            [ 'price', 'required','when'=>function($model){
+            [ 'price', 'required','when'=>function($model){//限价单时，必须有价格
                 return $model->type == 2;
             }],
             [['user_id', 'created_at', 'close_at', 'updated_at'], 'integer'],
-            [['goods_item', 'quantity', 'stop', ], 'number'],
+            [['goods_item', 'quantity','amount','use_funds', 'stop_loss','stop_profit' ], 'number'],
             ['type', 'in', 'range' =>Yii::$app->params['transaction.rang']['type'] ],
             ['direction', 'in', 'range' =>Yii::$app->params['transaction.rang']['direction']],
             ['status', 'in', 'range' =>Yii::$app->params['transaction.rang']['status']],
             ['close_type', 'in', 'range' =>Yii::$app->params['transaction.rang']['close_type'] ],
-            [['user_id','goods_item', 'quantity', 'stop', 'created_at', 'close_at', 'updated_at'], 'compare', 'compareValue' => 0, 'operator' => '>'],
+            [['user_id','goods_item', 'quantity', 'stop_loss','stop_profit', 'created_at', 'close_at', 'updated_at'], 'compare', 'compareValue' => 0, 'operator' => '>'],
+            [['stop_loss','stop_profit'], 'compare', 'compareValue' => 0, 'operator' => '>='],
             [['type', 'direction', 'status', 'close_type'], 'string'],
             [['price', 'close_price'], 'number']
         ];
@@ -78,7 +82,10 @@ class Transaction extends \yii\db\ActiveRecord
             'direction',// '方向：1买涨2买跌',
             'price',// '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity',// '数量',
-            'stop',// '止损止盈价格',
+            'amount',//金额
+            'use_funds',//占用资金
+            'stop_loss',// '止损价格',
+            'stop_profit',// '止盈价格',
             'status',// '状态：0限价单还未生效，1已生效订单，2已结束订单',
             'close_type',// '关闭类型：0未关闭，1用户人为关闭，2止损止盈触发关闭，3爆仓关闭',
             'created_at',// '创建时间',
@@ -101,9 +108,12 @@ class Transaction extends \yii\db\ActiveRecord
             'direction' => '方向：1买涨2买跌',
             'price' => '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity' => '数量',
-            'stop' => '止损止盈价格',
+            'amount'=> '金额',
+            'use_funds'=>'占用资金',
+            'stop_loss' => '止损价格',
+            'stop_profit' => '止盈价格',
             'status' => '状态：0限价单还未生效，1已生效订单，2已结束订单',
-            'close_type' => '关闭类型：0未关闭，1用户人为关闭，2止损止盈触发关闭，3爆仓关闭',
+            'close_type' => '关闭类型：0未关闭，1用户人为关闭，2止损触发关闭，3止盈触发关闭，4爆仓关闭',
             'created_at' => '创建时间',
             'close_at' => '关闭时间',
             'close_price' => '关闭价格',
@@ -135,6 +145,8 @@ class Transaction extends \yii\db\ActiveRecord
         '0',
         '1',
         '2',
+        '3',
+        '4'
     ],
 ];
     }
@@ -217,6 +229,18 @@ class Transaction extends \yii\db\ActiveRecord
                 'jsfunction'=>'changeStatus',
                 'field'=>'close_type',
                 'field_value'=>'2'
+                ],
+                [
+                'name'=>$options["close_type"]["3"],
+                'jsfunction'=>'changeStatus',
+                'field'=>'close_type',
+                'field_value'=>'3'
+                ],
+                [
+                'name'=>$options["close_type"]["4"],
+                'jsfunction'=>'changeStatus',
+                'field'=>'close_type',
+                'field_value'=>'4'
                 ],
         ];
     }

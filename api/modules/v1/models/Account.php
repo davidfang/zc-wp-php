@@ -10,6 +10,8 @@ use Yii;
  * @property integer $id
  * @property integer $user_id
  * @property integer $account
+ * @property integer $freezing_funds
+ * @property integer $available_funds
  * @property integer $in
  * @property integer $out
  * @property integer $created_at
@@ -32,7 +34,7 @@ class Account extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'account', 'in', 'out', 'created_at', 'updated_at'], 'required'],
-            [['user_id', 'account', 'in', 'out', 'created_at', 'updated_at'], 'integer']
+            [['user_id', 'account', 'in', 'out', 'freezing_funds', 'available_funds', 'created_at', 'updated_at'], 'number']
         ];
     }
 
@@ -46,6 +48,8 @@ class Account extends \yii\db\ActiveRecord
             'id',// 'ID',
             'user_id',// '用户ID',
             'account',// '用户账户金额',
+            'freezing_funds',// '冻结资金',
+            'available_funds',// '可用资金',
             'in',// '入金',
             'out',// '出金',
             'created_at',// '创建时间',
@@ -62,6 +66,8 @@ class Account extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => '用户ID',
             'account' => '用户账户金额',
+            'freezing_funds' => '冻结资金',
+            'available_funds' => '可用资金',
             'in' => '入金',
             'out' => '出金',
             'created_at' => '创建时间',
@@ -75,7 +81,7 @@ class Account extends \yii\db\ActiveRecord
      */
     public function getOptions()
     {
-          return [];
+        return [];
     }
 
     /**
@@ -97,7 +103,34 @@ class Account extends \yii\db\ActiveRecord
         $attributeLabels = $this->attributeLabels();
         $options = $this->options;
         return [
-            ];
+        ];
+    }
+
+    /**
+     * 根据用户ID获得用户的账户信息
+     * @param $user_id
+     * @return \yii\db\ActiveQuery
+     */
+public function getAccountByUserId($user_id){
+    return self::find(['user_id'=>$user_id]);
+}
+    /**
+     * 冻结资金
+     * @param $amount
+     */
+    public function freezingFunds($amount){
+        $this->freezing_funds = $this->freezing_funds + $amount;
+        $this->available_funds = $this->available_funds - $amount;
+        $this->save();
+    }
+/**
+     * 解冻资金
+     * @param $amount
+     */
+    public function unFreezingFunds($amount){
+        $this->freezing_funds = $this->freezing_funds - $amount;
+        $this->available_funds = $this->available_funds + $amount;
+        $this->save();
     }
 
 }
