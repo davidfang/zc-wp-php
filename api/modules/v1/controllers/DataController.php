@@ -73,10 +73,10 @@ class DataController extends Controller
     public function actionIndex($stock,$time = 'now'){
         Yii::$app->response->format = yii\web\Response::FORMAT_RAW;
         $redis = Yii::$app->redis;
-        $key = $stock.'-realTime-'.$time;
-        //$result1 = $redis->executeCommand('ZREVRANGE',['zset-sliver-realTime-M1',0,30]);
-        $result1 = $redis->executeCommand('ZREVRANGE',[$key.'-zset',0,30]);
-        //array_unshift($result1,'sliver-realTime-M1');
+        $key = $stock.':realTime:'.$time;
+        //$result1 = $redis->executeCommand('ZREVRANGE',['zset:sliver:realTime:M1',0,30]);
+        $result1 = $redis->executeCommand('ZREVRANGE',[$key.':zset',0,30]);
+        //array_unshift($result1,'sliver:realTime:M1');
         array_unshift($result1,$key);
         $result = $redis->executeCommand('HMGET',$result1);
         echo 'date	open	high	low	close	volume  adjclose'."\r\n";

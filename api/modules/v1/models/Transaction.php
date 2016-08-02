@@ -11,6 +11,7 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $id
  * @property integer $user_id
  * @property integer $goods_item
+ * @property integer $size
  * @property string $type
  * @property string $direction
  * @property double $price
@@ -18,7 +19,9 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $amount
  * @property integer $use_funds
  * @property integer $stop_loss
+ * @property integer $stop_loss_price
  * @property integer $stop_profit
+ * @property integer $stop_profit_price
  * @property string $status
  * @property string $close_type
  * @property integer $created_at
@@ -36,6 +39,7 @@ class Transaction extends \yii\db\ActiveRecord
     {
         return '{{%transaction}}';
     }
+
     /**
      * @inheritdoc
      */
@@ -45,6 +49,7 @@ class Transaction extends \yii\db\ActiveRecord
             TimestampBehavior::className(),
         ];
     }
+
     /**
      * @inheritdoc
      */
@@ -52,17 +57,17 @@ class Transaction extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'goods_item', 'quantity'], 'required'],
-            [ 'price', 'required','when'=>function($model){//限价单时，必须有价格
+            ['price', 'required', 'when' => function ($model) {//限价单时，必须有价格
                 return $model->type == 2;
             }],
-            [['user_id', 'created_at', 'close_at', 'updated_at'], 'integer'],
-            [['goods_item', 'quantity','amount','use_funds', 'stop_loss','stop_profit' ], 'number'],
-            ['type', 'in', 'range' =>Yii::$app->params['transaction.rang']['type'] ],
-            ['direction', 'in', 'range' =>Yii::$app->params['transaction.rang']['direction']],
-            ['status', 'in', 'range' =>Yii::$app->params['transaction.rang']['status']],
-            ['close_type', 'in', 'range' =>Yii::$app->params['transaction.rang']['close_type'] ],
-            [['user_id','goods_item', 'quantity', 'stop_loss','stop_profit', 'created_at', 'close_at', 'updated_at'], 'compare', 'compareValue' => 0, 'operator' => '>'],
-            [['stop_loss','stop_profit'], 'compare', 'compareValue' => 0, 'operator' => '>='],
+            [['user_id', 'created_at', 'close_at', 'updated_at', 'stop_loss', 'stop_profit'], 'integer'],
+            [['goods_item', 'size', 'quantity', 'amount', 'use_funds', 'stop_loss_price', 'stop_profit_price'], 'number'],
+            ['type', 'in', 'range' => Yii::$app->params['transaction.rang']['type']],
+            ['direction', 'in', 'range' => Yii::$app->params['transaction.rang']['direction']],
+            ['status', 'in', 'range' => Yii::$app->params['transaction.rang']['status']],
+            ['close_type', 'in', 'range' => Yii::$app->params['transaction.rang']['close_type']],
+            [['user_id', 'goods_item', 'quantity', 'created_at', 'close_at', 'updated_at'], 'compare', 'compareValue' => 0, 'operator' => '>'],
+            [['stop_loss', 'stop_profit'], 'compare', 'compareValue' => 0, 'operator' => '>='],
             [['type', 'direction', 'status', 'close_type'], 'string'],
             [['price', 'close_price'], 'number']
         ];
@@ -78,14 +83,17 @@ class Transaction extends \yii\db\ActiveRecord
             'id',// 'ID',
             'user_id',// '用户ID',
             'goods_item',// '产品编码',
+            'size',// '产品规格',
             'type',// '类型：1即时单，2限价单',
             'direction',// '方向：1买涨2买跌',
             'price',// '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity',// '数量',
             'amount',//金额
             'use_funds',//占用资金
-            'stop_loss',// '止损价格',
-            'stop_profit',// '止盈价格',
+            'stop_loss',// '止损百分比',
+            'stop_loss_price',// '止损价格',
+            'stop_profit',// '止盈百分比',
+            'stop_profit_price',// '止盈价格',
             'status',// '状态：0限价单还未生效，1已生效订单，2已结束订单',
             'close_type',// '关闭类型：0未关闭，1用户人为关闭，2止损止盈触发关闭，3爆仓关闭',
             'created_at',// '创建时间',
@@ -104,14 +112,17 @@ class Transaction extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => '用户ID',
             'goods_item' => '产品编码',
+            'size' => '产品规格',
             'type' => '类型：1即时单，2限价单',
             'direction' => '方向：1买涨2买跌',
             'price' => '价格：即时单为当前方向的最新价，限价单为用户设置价',
             'quantity' => '数量',
-            'amount'=> '金额',
-            'use_funds'=>'占用资金',
-            'stop_loss' => '止损价格',
-            'stop_profit' => '止盈价格',
+            'amount' => '金额',
+            'use_funds' => '占用资金',
+            'stop_loss' => '止损百分比',
+            'stop_loss_price' => '止损价格',
+            'stop_profit' => '止盈百分比',
+            'stop_profit_price' => '止盈价格',
             'status' => '状态：0限价单还未生效，1已生效订单，2已结束订单',
             'close_type' => '关闭类型：0未关闭，1用户人为关闭，2止损触发关闭，3止盈触发关闭，4爆仓关闭',
             'created_at' => '创建时间',
@@ -127,28 +138,28 @@ class Transaction extends \yii\db\ActiveRecord
      */
     public function getOptions()
     {
-          return [
-    'type' => [
-        1 => '1',
-        2 => '2',
-    ],
-    'direction' => [
-        1 => '1',
-        2 => '2',
-    ],
-    'status' => [
-        '0',
-        '1',
-        '2',
-    ],
-    'close_type' => [
-        '0',
-        '1',
-        '2',
-        '3',
-        '4'
-    ],
-];
+        return [
+            'type' => [
+                1 => '1',
+                2 => '2',
+            ],
+            'direction' => [
+                1 => '1',
+                2 => '2',
+            ],
+            'status' => [
+                '0',
+                '1',
+                '2',
+            ],
+            'close_type' => [
+                '0',
+                '1',
+                '2',
+                '3',
+                '4'
+            ],
+        ];
     }
 
     /**
@@ -170,79 +181,128 @@ class Transaction extends \yii\db\ActiveRecord
         $attributeLabels = $this->attributeLabels();
         $options = $this->options;
         return [
-                    [
-                'name'=>$options["type"]["1"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'type',
-                'field_value'=>'1'
-                ],
-                [
-                'name'=>$options["type"]["2"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'type',
-                'field_value'=>'2'
-                ],
-                [
-                'name'=>$options["direction"]["1"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'direction',
-                'field_value'=>'1'
-                ],
-                [
-                'name'=>$options["direction"]["2"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'direction',
-                'field_value'=>'2'
-                ],
-                [
-                'name'=>$options["status"]["0"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'status',
-                'field_value'=>'0'
-                ],
-                [
-                'name'=>$options["status"]["1"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'status',
-                'field_value'=>'1'
-                ],
-                [
-                'name'=>$options["status"]["2"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'status',
-                'field_value'=>'2'
-                ],
-                [
-                'name'=>$options["close_type"]["0"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'close_type',
-                'field_value'=>'0'
-                ],
-                [
-                'name'=>$options["close_type"]["1"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'close_type',
-                'field_value'=>'1'
-                ],
-                [
-                'name'=>$options["close_type"]["2"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'close_type',
-                'field_value'=>'2'
-                ],
-                [
-                'name'=>$options["close_type"]["3"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'close_type',
-                'field_value'=>'3'
-                ],
-                [
-                'name'=>$options["close_type"]["4"],
-                'jsfunction'=>'changeStatus',
-                'field'=>'close_type',
-                'field_value'=>'4'
-                ],
+            [
+                'name' => $options["type"]["1"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'type',
+                'field_value' => '1'
+            ],
+            [
+                'name' => $options["type"]["2"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'type',
+                'field_value' => '2'
+            ],
+            [
+                'name' => $options["direction"]["1"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'direction',
+                'field_value' => '1'
+            ],
+            [
+                'name' => $options["direction"]["2"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'direction',
+                'field_value' => '2'
+            ],
+            [
+                'name' => $options["status"]["0"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'status',
+                'field_value' => '0'
+            ],
+            [
+                'name' => $options["status"]["1"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'status',
+                'field_value' => '1'
+            ],
+            [
+                'name' => $options["status"]["2"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'status',
+                'field_value' => '2'
+            ],
+            [
+                'name' => $options["close_type"]["0"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'close_type',
+                'field_value' => '0'
+            ],
+            [
+                'name' => $options["close_type"]["1"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'close_type',
+                'field_value' => '1'
+            ],
+            [
+                'name' => $options["close_type"]["2"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'close_type',
+                'field_value' => '2'
+            ],
+            [
+                'name' => $options["close_type"]["3"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'close_type',
+                'field_value' => '3'
+            ],
+            [
+                'name' => $options["close_type"]["4"],
+                'jsfunction' => 'changeStatus',
+                'field' => 'close_type',
+                'field_value' => '4'
+            ],
         ];
+    }
+
+    /**
+     * 计算止损价格
+     * @param $total  总资金
+     * @return float
+     */
+    public function getStopLossPrice($total)
+    {
+        $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
+        $spreads = $transactionConfig['spreads']; //交易点差
+
+        if ($this->stop_loss != 0) {//用户有主动设置止损百分比
+
+            $lossInterval = $total * $this->stop_loss / 100 / ($spreads * $this->quantity * $this->size);//止损区间点数=总价 X 止损百分比 /(交易点差 X  交易量 X 交易规格）
+
+        } else {//用户没有设置止损
+            $lossInterval = ($total-$this->use_funds) / ($spreads * $this->quantity * $this->size);//止损区间点数 = (总价 - 此次交易使用资金） /(交易点差 X  交易量 X 交易规格）
+        }
+        if ($this->direction == 1) {//买涨
+            $this->stop_loss_price = $this->price - $lossInterval * $transactionConfig['basicPoint'];//开始价格-止损点数 X 交易基点
+        } else {
+            $this->stop_loss_price = $this->price + $lossInterval * $transactionConfig['basicPoint'];//
+        }
+
+        return $this->stop_loss_price;
+    }
+
+    /**
+     * 计算止盈价格
+     * @param $total  总资金
+     * @return float
+     */
+    public function getStopProfitPrice($total)
+    {
+        if ($this->stop_profit != 0) {
+            $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
+            $spreads = $transactionConfig['spreads']; //交易点差
+
+            $profitInterval = $total * $this->stop_profit / 100 / ($spreads * $this->quantity * $this->size);//止盈区间点数=总价 X 止盈百分比 /(交易点差 X  交易量 X 交易规格）
+            if ($this->direction == 1) {//买涨
+                $this->stop_profit_price = $this->price + $profitInterval * $transactionConfig['basicPoint'];//开始价格-止盈点数 X 交易基点
+            } else {
+                $this->stop_profit_price = $this->price - $profitInterval * $transactionConfig['basicPoint'];//
+            }
+        } else {
+            $this->stop_profit_price = 0;
+        }
+        return $this->stop_profit_price;
     }
 
 }
