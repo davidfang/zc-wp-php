@@ -27,6 +27,7 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $created_at
  * @property integer $close_at
  * @property double $close_price
+ * @property double $profit_loss
  * @property integer $updated_at
  */
 class Transaction extends \yii\db\ActiveRecord
@@ -61,15 +62,14 @@ class Transaction extends \yii\db\ActiveRecord
                 return $model->type == 2;
             }],
             [['user_id', 'created_at', 'close_at', 'updated_at', 'stop_loss', 'stop_profit'], 'integer'],
-            [['goods_item', 'size', 'quantity', 'amount', 'use_funds', 'stop_loss_price', 'stop_profit_price'], 'number'],
+            [['goods_item', 'size', 'quantity', 'amount', 'use_funds', 'stop_loss_price', 'stop_profit_price','price','close_price','profit_loss'], 'number'],
             ['type', 'in', 'range' => Yii::$app->params['transaction.rang']['type']],
             ['direction', 'in', 'range' => Yii::$app->params['transaction.rang']['direction']],
             ['status', 'in', 'range' => Yii::$app->params['transaction.rang']['status']],
             ['close_type', 'in', 'range' => Yii::$app->params['transaction.rang']['close_type']],
             [['user_id', 'goods_item', 'quantity', 'created_at', 'close_at', 'updated_at'], 'compare', 'compareValue' => 0, 'operator' => '>'],
             [['stop_loss', 'stop_profit'], 'compare', 'compareValue' => 0, 'operator' => '>='],
-            [['type', 'direction', 'status', 'close_type'], 'string'],
-            [['price', 'close_price'], 'number']
+            [['type', 'direction', 'status', 'close_type'], 'string']
         ];
     }
 
@@ -99,6 +99,7 @@ class Transaction extends \yii\db\ActiveRecord
             'created_at',// '创建时间',
             'close_at',// '关闭时间',
             'close_price',// '关闭价格',
+            'profit_loss',// '盈亏',
             'updated_at',// '结束时间',
         ];
     }
@@ -128,6 +129,7 @@ class Transaction extends \yii\db\ActiveRecord
             'created_at' => '创建时间',
             'close_at' => '关闭时间',
             'close_price' => '关闭价格',
+            'profit_loss' => '盈亏',
             'updated_at' => '结束时间',
         ];
     }
@@ -263,20 +265,21 @@ class Transaction extends \yii\db\ActiveRecord
      */
     public function getStopLossPrice($total)
     {
-        $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
-        $spreads = $transactionConfig['spreads']; //交易点差
 
         if ($this->stop_loss != 0) {//用户有主动设置止损百分比
+            $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
+            $spreads = $transactionConfig['spreads']; //交易点差
 
             $lossInterval = $total * $this->stop_loss / 100 / ($spreads * $this->quantity * $this->size);//止损区间点数=总价 X 止损百分比 /(交易点差 X  交易量 X 交易规格）
 
+            if ($this->direction == 1) {//买涨
+                $this->stop_loss_price = $this->price - $lossInterval * $transactionConfig['basicPoint'];//开始价格-止损点数 X 交易基点
+            } else {
+                $this->stop_loss_price = $this->price + $lossInterval * $transactionConfig['basicPoint'];//
+            }
+
         } else {//用户没有设置止损
-            $lossInterval = ($total-$this->use_funds) / ($spreads * $this->quantity * $this->size);//止损区间点数 = (总价 - 此次交易使用资金） /(交易点差 X  交易量 X 交易规格）
-        }
-        if ($this->direction == 1) {//买涨
-            $this->stop_loss_price = $this->price - $lossInterval * $transactionConfig['basicPoint'];//开始价格-止损点数 X 交易基点
-        } else {
-            $this->stop_loss_price = $this->price + $lossInterval * $transactionConfig['basicPoint'];//
+            $this->stop_loss_price =  0;
         }
 
         return $this->stop_loss_price;
