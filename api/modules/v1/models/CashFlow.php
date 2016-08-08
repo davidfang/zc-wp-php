@@ -10,6 +10,7 @@ use yii\behaviors\TimestampBehavior;
  * @property integer $id
  * @property double $money
  * @property string $type
+ * @property string $user_id
  * @property string $weixin_order_id
  * @property integer $transaction_id
  * @property string $remark
@@ -40,10 +41,9 @@ class CashFlow extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['money'], 'required'],
-            [['money'], 'number'],
+            [['money','user_id'], 'required'],
             [['type'], 'string'],
-            [['transaction_id', 'created_at', 'updated_at'], 'integer'],
+            [['money','transaction_id','user_id', 'created_at', 'updated_at'], 'integer'],
             [['weixin_order_id', 'remark'], 'string', 'max' => 100]
         ];
     }
@@ -58,6 +58,7 @@ class CashFlow extends \yii\db\ActiveRecord
             'id',// 'ID',
             'money',// '金额',
             'type',// '资金类型：1入金，2交易盈亏，3出金，4其它',
+            'user_id',//用户ID
             'weixin_order_id',// '微信交易单ID',
             'transaction_id',// '交易订单ID',
             'remark',// '备注',
@@ -75,6 +76,7 @@ class CashFlow extends \yii\db\ActiveRecord
             'id' => 'ID',
             'money' => '金额',
             'type' => '资金类型：1入金，2交易盈亏，3出金，4其它',
+            'user_id' => '用户ID',
             'weixin_order_id' => '微信交易单ID',
             'transaction_id' => '交易订单ID',
             'remark' => '备注',

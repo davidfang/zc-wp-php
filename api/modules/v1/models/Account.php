@@ -34,7 +34,7 @@ class Account extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'account', 'in', 'out', 'created_at', 'updated_at'], 'required'],
-            [['user_id', 'account', 'in', 'out', 'freezing_funds', 'available_funds', 'created_at', 'updated_at'], 'number']
+            [['user_id', 'account', 'in', 'out', 'freezing_funds', 'available_funds', 'created_at', 'updated_at'], 'integer']
         ];
     }
 
@@ -119,8 +119,10 @@ public function getAccountByUserId($user_id){
      * @param $amount
      */
     public function freezingFunds($amount){
-        $this->freezing_funds = $this->freezing_funds + $amount;
-        $this->available_funds = $this->available_funds - $amount;
+        //var_dump([ $this->freezing_funds,$this->available_funds,$amount]);
+        $this->freezing_funds +=   $amount;
+        $this->available_funds -=   $amount;
+        //var_dump([ $this->freezing_funds,$this->available_funds]);//exit;
         $this->save();
     }
 /**

@@ -61,8 +61,7 @@ class Transaction extends \yii\db\ActiveRecord
             ['price', 'required', 'when' => function ($model) {//限价单时，必须有价格
                 return $model->type == 2;
             }],
-            [['user_id', 'created_at', 'close_at', 'updated_at', 'stop_loss', 'stop_profit'], 'integer'],
-            [['goods_item', 'size', 'quantity', 'amount', 'use_funds', 'stop_loss_price', 'stop_profit_price','price','close_price','profit_loss'], 'number'],
+            [['user_id', 'created_at', 'close_at', 'updated_at', 'stop_loss', 'stop_profit','goods_item', 'size', 'quantity', 'amount', 'use_funds', 'stop_loss_price', 'stop_profit_price','price','close_price','profit_loss'], 'integer'],
             ['type', 'in', 'range' => Yii::$app->params['transaction.rang']['type']],
             ['direction', 'in', 'range' => Yii::$app->params['transaction.rang']['direction']],
             ['status', 'in', 'range' => Yii::$app->params['transaction.rang']['status']],
@@ -270,7 +269,7 @@ class Transaction extends \yii\db\ActiveRecord
             $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
             $spreads = $transactionConfig['spreads']; //交易点差
 
-            $lossInterval = $total * $this->stop_loss / 100 / ($spreads * $this->quantity * $this->size);//止损区间点数=总价 X 止损百分比 /(交易点差 X  交易量 X 交易规格）
+            $lossInterval = $total * $this->stop_loss / 100 / ($spreads * $this->quantity * $this->size) * 100;//止损区间点数=总价 X 止损百分比 /(交易点差 X  交易量 X 交易规格）X 100（取整处理）
 
             if ($this->direction == 1) {//买涨
                 $this->stop_loss_price = $this->price - $lossInterval * $transactionConfig['basicPoint'];//开始价格-止损点数 X 交易基点
@@ -296,7 +295,7 @@ class Transaction extends \yii\db\ActiveRecord
             $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
             $spreads = $transactionConfig['spreads']; //交易点差
 
-            $profitInterval = $total * $this->stop_profit / 100 / ($spreads * $this->quantity * $this->size);//止盈区间点数=总价 X 止盈百分比 /(交易点差 X  交易量 X 交易规格）
+            $profitInterval = $total * $this->stop_profit / 100 / ($spreads * $this->quantity * $this->size) * 100 ;//止盈区间点数=总价 X 止盈百分比 /(交易点差 X  交易量 X 交易规格）X 100（取整处理）
             if ($this->direction == 1) {//买涨
                 $this->stop_profit_price = $this->price + $profitInterval * $transactionConfig['basicPoint'];//开始价格-止盈点数 X 交易基点
             } else {
@@ -308,4 +307,14 @@ class Transaction extends \yii\db\ActiveRecord
         return $this->stop_profit_price;
     }
 
+    /**
+     * 根据用户ID获得用户持仓头寸
+     * @param $userId
+     * @return $this
+     */
+    public static function getPositionsByUserId($userId)
+    {
+        return self::find()->where(['user_id'=>$userId,'status'=>'1'])->orderBy(['id'=>'desc'])->asArray()->all();
+        //return self::find(['user_id'=>$userId,'status'=>'1'])->select(['id','user_id','goods_item','size','type','direction','price','quantity','amount'])->orderBy(['id'=>'desc'])->asArray()->all();
+    }
 }

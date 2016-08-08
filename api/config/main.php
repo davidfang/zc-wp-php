@@ -37,12 +37,12 @@ return [
                     }
             },
         ],*/
-        /*'response' => [
+        'response' => [
             'class' => 'yii\web\Response',
             'format' => yii\web\Response::FORMAT_JSON,
             'charset' => 'UTF-8',
             // ...
-        ],*/
+        ],
         'user' => [
             'identityClass' => 'api\modules\v1\models\User',
             'enableSession' => false,
@@ -93,7 +93,7 @@ return [
             //'cache' => 'yii\caching\FileCache',
         ],*/
     ],
-    /*'as authenticator' => [
+    'as authenticator' => [
         'class' => 'api\common\QueryParamAuth',
         'allowActions' => [
             '/',
@@ -102,7 +102,7 @@ return [
             '/v1/post/index',
 
         ]
-    ],*/
+    ],
     /*'as access' => [
         'class' => 'zc\rbac\components\AccessControl',
         'allowActions' => [
