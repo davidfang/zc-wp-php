@@ -100,7 +100,11 @@ return [
             '/v1/post',
             '/v1/post/index',
             '/v1/post/index',
-
+            '/v1/user/get-mobile-verification',
+            '/v1/user/sign-in',
+            '/v1/user/sign-up',
+            '/v1/user/get-mobile-verification',
+            '/v1/ucenter/amount',
         ]
     ],
     /*'as access' => [

@@ -35,6 +35,12 @@ class QueryParamAuth extends YiiQueryParamAuth {
     public function authenticate($user, $request, $response)
     {
         $accessToken = $request->get($this->tokenParam);
+        $action = \Yii::$app->requestedAction;
+        $actionId = $action->getUniqueId();
+        //var_dump($actionId);exit;var_dump($actionId);exit;
+        if(($accessToken === null || $accessToken === 'null') && in_array('/'.$actionId,$this->allowActions)){
+            return $request;
+        }
         if (is_string($accessToken)) {
             $identity = $user->loginByAccessToken($accessToken, get_class($this));
             if ($identity !== null) {
@@ -67,7 +73,6 @@ class QueryParamAuth extends YiiQueryParamAuth {
 
 
 
-                $action = \Yii::$app->requestedAction;
                 $params = $request->queryParams;
 
                 $searchModel = new AuthItemSearch(['type' => Item::TYPE_PERMISSION]);
@@ -77,7 +82,7 @@ class QueryParamAuth extends YiiQueryParamAuth {
                 //var_dump(\Yii::$app->authManager->getPermissions());
                 //var_dump($searchModel->items);
                 //var_dump($permissionsArray);
-                $actionId = $action->getUniqueId();//var_dump($actionId);exit;
+
                 if(in_array($actionId,$this->allowActions)){
                     return $identity;
                 }
