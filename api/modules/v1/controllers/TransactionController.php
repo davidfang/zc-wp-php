@@ -63,11 +63,11 @@ class TransactionController extends ActiveController
                     }
                 }
                 //处理用户账户金额对比
-                $userAmount = $redis->hget('user:' . $userInfo->id, 'available_funds') ;//用户可用资金
+                $userAmount = $redis->hget('user:' . $userInfo->id, 'available_funds');//用户可用资金
 
                 $transactionModel->amount = $transactionAmount = $transactionModel->price * $transactionModel->quantity * $goodsItemInfo['size'];//交易总金额 = 价格 X 数量 X 规格
                 $transactionLever = $transactionConfig['lever'];//交易杠杆
-                $transactionModel->use_funds = round($transactionAmount / $transactionLever, 2);//占用资金
+                $transactionModel->use_funds = floor($transactionAmount / $transactionLever * 100);//占用资金
                 $userCanAmount = $userAmount * $transactionLever;//用户可使用金额
                 $transactionSavingAmount = ($transactionConfig['saving'] * $goodsItemInfo['change'] * $transactionModel->quantity);//交易保全金额 = (交易保全变动值 X 变动金额 X 数量  )  //这里简单算它至少可以接受一次价格变动
                 if ($transactionAmount > ($userCanAmount - $transactionSavingAmount)) {//交易需要金额  > (用户可使用金额-  交易保全金额)
@@ -96,8 +96,8 @@ class TransactionController extends ActiveController
                     //var_dump($accountModel);exit;
                     $transaction->commit();//事务完成 写入REDIS事务
                     $redis->executeCommand('MULTI');//REDIS事务  开始
-                    $redis->hincrby('user:' . $userInfo->id, 'freezing_funds', $transactionModel->use_funds );//   增加冻结资金
-                    $redis->hincrby('user:' . $userInfo->id, 'available_funds', -$transactionModel->use_funds );//   减少可用资金
+                    $redis->hincrby('user:' . $userInfo->id, 'freezing_funds', $transactionModel->use_funds);//   增加冻结资金
+                    $redis->hincrby('user:' . $userInfo->id, 'available_funds', -$transactionModel->use_funds);//   减少可用资金
                     if ($transactionModel->stop_loss_price != 0) {//有止损  将止损写入redis 产品名：loss:[1,2] 止损价格  交易ID
                         $redis->zadd($goodsItemInfo['symbol'] . ':loss:' . $transactionModel->direction, $stopLossPrice, $transactionModel->id);
                     }
@@ -110,7 +110,7 @@ class TransactionController extends ActiveController
                     $redis->executeCommand('EXEC');//redis事务结束
                     $return['status'] = true;
                     $return['msg'] = '交易成功';
-                    $return['data'] = ['id' => $transactionModel->id, 'use_found' => $transactionModel->use_funds,'$transactionModel->amount'=>$transactionModel->amount, '$transactionAmount'=> $transactionAmount];
+                    $return['data'] = ['id' => $transactionModel->id, 'use_found' => $transactionModel->use_funds, '$transactionModel->amount' => $transactionModel->amount, '$transactionAmount' => $transactionAmount];
                 } else {
                     $return['msg'] = '交易失败';
                     $return['error'] = $transactionModel->getFirstErrors();
@@ -179,7 +179,7 @@ class TransactionController extends ActiveController
                 $redis->hincrby('user:' . $transactionModel->user_id, 'freezing_funds', -$transactionModel->use_funds);
                 $accountModel->freezing_funds -= $transactionModel->use_funds;
                 //还原可用资金
-                $redis->hincrby('user:' . $transactionModel->user_id, 'available_funds', $transactionModel->use_funds );
+                $redis->hincrby('user:' . $transactionModel->user_id, 'available_funds', $transactionModel->use_funds);
                 $accountModel->available_funds += $transactionModel->use_funds;
 
                 //将盈亏记入资金流水，
@@ -196,7 +196,7 @@ class TransactionController extends ActiveController
                 $accountModel->save();
 
                 //7. 修改Redis中user信息：资金总额，可用资金
-                $redis->hincrby('user:' . $transactionModel->user_id, 'amount', $profitLoss );//   增加资金总额
+                $redis->hincrby('user:' . $transactionModel->user_id, 'amount', $profitLoss);//   增加资金总额
                 $redis->hincrby('user:' . $transactionModel->user_id, 'available_funds', $profitLoss);//   增加可用资金
                 //8. 发微信给用户，告知用户订单关闭信息；
                 $redis->executeCommand('EXEC');//redis事务结束

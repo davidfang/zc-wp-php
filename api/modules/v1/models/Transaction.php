@@ -272,9 +272,9 @@ class Transaction extends \yii\db\ActiveRecord
             $lossInterval = $total * $this->stop_loss / 100 / ($spreads * $this->quantity * $this->size) * 100;//止损区间点数=总价 X 止损百分比 /(交易点差 X  交易量 X 交易规格）X 100（取整处理）
 
             if ($this->direction == 1) {//买涨
-                $this->stop_loss_price = $this->price - $lossInterval * $transactionConfig['basicPoint'];//开始价格-止损点数 X 交易基点
+                $this->stop_loss_price = $this->price - floor($lossInterval * $transactionConfig['basicPoint']);//开始价格-止损点数 X 交易基点
             } else {
-                $this->stop_loss_price = $this->price + $lossInterval * $transactionConfig['basicPoint'];//
+                $this->stop_loss_price = $this->price + floor($lossInterval * $transactionConfig['basicPoint']);//
             }
 
         } else {//用户没有设置止损
@@ -297,9 +297,9 @@ class Transaction extends \yii\db\ActiveRecord
 
             $profitInterval = $total * $this->stop_profit / 100 / ($spreads * $this->quantity * $this->size) * 100 ;//止盈区间点数=总价 X 止盈百分比 /(交易点差 X  交易量 X 交易规格）X 100（取整处理）
             if ($this->direction == 1) {//买涨
-                $this->stop_profit_price = $this->price + $profitInterval * $transactionConfig['basicPoint'];//开始价格-止盈点数 X 交易基点
+                $this->stop_profit_price = $this->price + floor($profitInterval * $transactionConfig['basicPoint']);//开始价格-止盈点数 X 交易基点
             } else {
-                $this->stop_profit_price = $this->price - $profitInterval * $transactionConfig['basicPoint'];//
+                $this->stop_profit_price = $this->price - floor($profitInterval * $transactionConfig['basicPoint']);//
             }
         } else {
             $this->stop_profit_price = 0;
