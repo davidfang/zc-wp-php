@@ -167,6 +167,10 @@ class UserController extends ActiveController
         }
     }
 
+    /**
+     * 获得用户账户信息
+     * @return array
+     */
     public function actionGetAmount()
     {
         $userInfo = Yii::$app->user->identity;
@@ -180,5 +184,6 @@ class UserController extends ActiveController
 
 
     }
+
 
 }

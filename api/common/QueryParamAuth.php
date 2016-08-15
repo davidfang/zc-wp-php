@@ -34,6 +34,7 @@ class QueryParamAuth extends YiiQueryParamAuth {
      */
     public function authenticate($user, $request, $response)
     {
+        //$accessToken = $request->headers->get($this->tokenParam);
         $accessToken = $request->get($this->tokenParam);
         $action = \Yii::$app->requestedAction;
         $actionId = $action->getUniqueId();

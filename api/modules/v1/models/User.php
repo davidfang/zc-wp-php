@@ -16,7 +16,7 @@ class User extends commonUser
 {
     public $password;
     public $oldpassword;
-    public $password_repeat;
+    public $passwordRepeat;
     public $verifyCode;
     public $code;
     //public $access_token;
@@ -57,12 +57,13 @@ class User extends commonUser
 
 
             ['email', 'email'],
-            [['password_repeat'], 'required', 'on' => ['create', 'update', 'chgpwd']],
-            [['oldpassword', 'password_repeat'], 'required', 'on' => ['chgpwd', 'update']],
+            [['passwordRepeat'], 'required', 'on' => ['create', 'update', 'chgpwd']],
+            [['oldpassword', 'password','passwordRepeat'], 'required', 'on' => ['chgpwd', 'update']],
             //['verifyCode','captcha','on'=>['create','chgpwd']],//
+            ['password', 'string', 'min' => 6],
             ['oldpassword', 'validateOldPassword', 'on' => 'chgpwd'],
             [['username', 'password', 'userphoto'], 'string', 'max' => 255],
-            ['password_repeat', 'compare', 'compareAttribute' => 'password']
+            ['passwordRepeat', 'compare', 'compareAttribute' => 'password']
         ];
     }
 
@@ -72,7 +73,9 @@ class User extends commonUser
             'login' => ['username', 'password'],
             'signIn' => ['mobile', 'password'],
             'create' => ['username', 'mobile', 'password', 'code'],
-            'register' => ['mobile'], 'update', 'chgpwd'
+            'register' => ['mobile'],
+            'update',
+            'chgpwd' =>['oldpassword','password','passwordRepeat']
         ]);
     }
 
@@ -114,7 +117,7 @@ class User extends commonUser
             'access_token',
             'oldpassword' => '原密码',
             'password' => '密码',
-            'password_repeat' => '重复密码',
+            'passwordRepeat' => '重复密码',
             'verifyCode' => '验证码',
             'email' => '邮箱',
             'userphoto' => '用户头像',
@@ -248,5 +251,15 @@ class User extends commonUser
 
         return !$this->getIsGuest();
     }
+    /**
+     *  重置密码 Resets password.
+     * @param boolean $runValidation 是否校验
+     * @return boolean if password was reset.
+     */
+    public function resetPassword($runValidation = true)
+    {
+        $this->setPassword($this->password);
 
+        return $this->save($runValidation);
+    }
 }
