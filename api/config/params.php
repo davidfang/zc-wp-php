@@ -13,7 +13,7 @@ return [
     ],
     'transaction.config' => [//交易配置信息
         'spreads' => 5,//波动一个点的价值  交易点值
-        'basicPoint' => 0.001,//交易基点  即价格波动最小单位
+        'basicPoint' => 0.01,//交易基点  即价格波动最小单位
         'speed' => 15,//限价单，交易价格限制，不能优于当前价格的范围
         'lever' => 100,//交易杠杆比例
         'saving' => 10,//交易保全变动值  即交易剩余资金需要容纳价格波动量
@@ -25,42 +25,42 @@ return [
             'name' => '白银',
             'size' => 10,
             'unit' => 'g',
-            'change' => 0.5],
+            'change' => 5],
         2 => [
             'symbol' => 'sliver',
             'goods_item' => 2,
             'name' => '白银',
             'size' => 100,
             'unit' => 'g',
-            'change' => 5],
+            'change' => 50],
         3 => [
             'symbol' => 'sliver',
             'goods_item' => 3,
             'name' => '白银',
             'size' => 1000,
             'unit' => 'g',
-            'change' => 50],
+            'change' => 500],
         4 => [
             'symbol' => 'crude',
             'goods_item' => 4,
             'name' => '原油',
             'size' => 10,
             'unit' => 'g',
-            'change' => 0.5],
+            'change' => 5],
         5 => [
             'symbol' => 'crude',
             'goods_item' => 5,
             'name' => '原油',
             'size' => 100,
             'unit' => 'g',
-            'change' => 5],
+            'change' => 50],
         6 => [
             'symbol' => 'crude',
             'goods_item' => 6,
             'name' => '原油',
             'size' => 1000,
             'unit' => 'g',
-            'change' => 50],
+            'change' => 500],
 
     ],
 ];

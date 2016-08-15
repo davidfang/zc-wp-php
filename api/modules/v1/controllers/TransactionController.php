@@ -157,7 +157,7 @@ class TransactionController extends ActiveController
                 $transactionModel->status = '2';
                 //4. 计算盈亏，关闭类型修改为人为关闭，更新关闭时间、关闭价格（当前价格）、盈亏；
                 //计算盈亏，
-                $profitLoss = ($currentPrice['open'] * 100 - $transactionModel->price) / $transactionConfig['basicPoint'] * $goodsItemInfo['change']; //盈亏 = （当前价格 - 交易价格）/ 交易基点  X 交易产品变动值
+                $profitLoss = ($currentPrice['open'] / $transactionConfig['basicPoint'] - $transactionModel->price)  * $goodsItemInfo['change'] * $transactionModel->quantity; //盈亏 = （当前取整价格 (真实价格除以交易基点)- 交易价格） X 交易产品变动值 X 订单数量
                 if ($transactionModel->direction != 1) {//买跌，不是买涨，
                     $profitLoss = -$profitLoss;//买跌时盈亏计算取反
                 }
