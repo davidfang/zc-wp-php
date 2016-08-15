@@ -67,7 +67,7 @@ class TransactionController extends ActiveController
 
                 $transactionModel->amount = $transactionAmount = $transactionModel->price * $transactionModel->quantity * $goodsItemInfo['size'];//交易总金额 = 价格 X 数量 X 规格
                 $transactionLever = $transactionConfig['lever'];//交易杠杆
-                $transactionModel->use_funds = floor($transactionAmount / $transactionLever * 100);//占用资金
+                $transactionModel->use_funds = floor($transactionAmount / $transactionLever );//占用资金
                 $userCanAmount = $userAmount * $transactionLever;//用户可使用金额
                 $transactionSavingAmount = ($transactionConfig['saving'] * $goodsItemInfo['change'] * $transactionModel->quantity);//交易保全金额 = (交易保全变动值 X 变动金额 X 数量  )  //这里简单算它至少可以接受一次价格变动
                 if ($transactionAmount > ($userCanAmount - $transactionSavingAmount)) {//交易需要金额  > (用户可使用金额-  交易保全金额)
