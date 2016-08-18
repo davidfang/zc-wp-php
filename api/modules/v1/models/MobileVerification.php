@@ -123,6 +123,7 @@ class MobileVerification extends \yii\db\ActiveRecord
             $mobileVerification->mobile = $mobile;
             $mobileVerification->code = $code = '' . rand(1000, 9999);
             if ($mobileVerification->save()) {
+                Yii::$app->redis->lpush('MobileVerification',$mobile.':'.$code);
                 return $code;
             } else {
                 return '';

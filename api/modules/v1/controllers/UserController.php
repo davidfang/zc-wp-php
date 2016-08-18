@@ -142,8 +142,8 @@ class UserController extends ActiveController
         $userModel->scenario = 'register';
         $userModel->mobile = $mobile;
         if ($userModel->validate()) {
-            $code = MobileVerification::generator($mobile);
-            return ['status' => true, 'msg' => '验证码发送成功,请查收手机短信。', 'code' => $code];
+            Yii::$app->redis->lpush('queue:MobileVerification',$mobile);
+            return ['status' => true, 'msg' => '验证码发送成功,请查收手机短信。', ];
         } else {
             return ['status' => false, 'msg' => $userModel->getFirstError('mobile')];
         }
