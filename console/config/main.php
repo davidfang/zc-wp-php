@@ -11,6 +11,9 @@ return [
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
     'controllerNamespace' => 'console\controllers',
+    'controllerMap' => [
+        'queue' => 'wh\queue\console\controllers\QueueController'
+    ],
     'components' => [
         'log' => [
             'targets' => [

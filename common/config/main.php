@@ -17,5 +17,8 @@ return [
         ],
         'db'=>$db['db'],
         'redis'=>$redis['redis'],
+        'queue' => [
+            'class' => 'wh\queue\RedisQueue',
+        ],
     ],
 ];
