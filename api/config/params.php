@@ -4,7 +4,7 @@ return [
     'return.true' => ['status' => true, 'msg' => '请求成功'],
     'adminEmail' => 'admin@example.com',
     'user.AccessTokenExpire' => 3600 * 24 * 360,
-    'imgHost' => 'http://localhost:8000',
+    'imgHost' => '',//'http://localhost:8000',
     'transaction.rang' => [//交易字段取值范围
         'type' => [1, 2],// '类型：1即进单，2限价单',
         'direction' => [1, 2],// '方向：1买涨2买跌',
