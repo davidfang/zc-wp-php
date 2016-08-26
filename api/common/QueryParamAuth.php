@@ -39,9 +39,10 @@ class QueryParamAuth extends YiiQueryParamAuth {
         $action = \Yii::$app->requestedAction;
         $actionId = $action->getUniqueId();
         //var_dump($actionId);exit;var_dump($actionId);exit;
-        if(($accessToken === null || $accessToken === 'null') && in_array('/'.$actionId,$this->allowActions)){
+        if(in_array('/'.$actionId,$this->allowActions)){
             return $request;
         }
+
         if (is_string($accessToken)) {
             $identity = $user->loginByAccessToken($accessToken, get_class($this));
             if ($identity !== null) {
@@ -162,7 +163,7 @@ class QueryParamAuth extends YiiQueryParamAuth {
                 throw new UnauthorizedHttpException('请登录后访问',200);
             }
         }
-        if ($accessToken !== null) {
+        if ($accessToken == null) {
             $this->handleFailure($response);
         }
 

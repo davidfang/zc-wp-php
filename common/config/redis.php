@@ -7,6 +7,7 @@ return [
         'hostname' => 'localhost',
         'port' => 6379,
         'database' => 2,
+        'password' => '0987654321-'
     ],
 ];
 ?>
