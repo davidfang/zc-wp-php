@@ -171,6 +171,8 @@ class User extends commonUser
             $this->setPassword($this->password);
             $this->generateAuthKey();
             if ($this->save(false)) {
+                $accountModel = new Account();
+                $accountModel->generatorAccount($this->id);
                 $this->generateAccessToken();
                 return $this;
             }

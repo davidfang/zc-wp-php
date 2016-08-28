@@ -317,4 +317,77 @@ class Transaction extends \yii\db\ActiveRecord
         return self::find()->where(['user_id'=>$userId,'status'=>'1'])->orderBy(['id'=>'desc'])->asArray()->all();
         //return self::find(['user_id'=>$userId,'status'=>'1'])->select(['id','user_id','goods_item','size','type','direction','price','quantity','amount'])->orderBy(['id'=>'desc'])->asArray()->all();
     }
+
+    /**
+     * 关闭持仓（平仓）
+     * @param $transactionInfoArray  交易信息数组
+     * @return CashFlow
+     */
+    public static function close($transactionInfoArray){
+        $redis = Yii::$app->redis;
+
+        $transaction = Yii::$app->db->beginTransaction();//mysql事务 开始
+        $transactionModel = self::findOne($transactionInfoArray['id']);
+        //2. 删除交易单中的止损止盈信息；
+        $goodsItemInfo = Yii::$app->params['goods_items'][$transactionInfoArray['goods_item']];//此次订单的产品ID对应产品配置信息
+        $transactionConfig = Yii::$app->params['transaction.config'];//交易配置信息
+        $symbol = $goodsItemInfo['symbol'];
+        $currentPrice = $transactionInfoArray['close_price'];//当前价格
+        if ($transactionInfoArray['stop_loss_price'] != 0) {//有止损 删除止损信息
+            $redis->zrem($symbol . ':loss:' . $transactionInfoArray['direction'], $transactionInfoArray['id']);
+        }
+        if ($transactionInfoArray['stop_profit_price'] != 0) {//有止盈 删除止盈信息
+            $redis->zrem($symbol . ':profit:' . $transactionInfoArray['direction'], $transactionInfoArray['id']);
+        }
+        //3. 修改交易单号状态为关闭（订单已结束2）；
+        $transactionModel->status = '2';
+        //4. 计算盈亏，关闭类型修改为人为关闭，更新关闭时间、关闭价格（当前价格）、盈亏；
+        //计算盈亏，
+        $profitLoss = ($currentPrice - $transactionModel->price)  * $goodsItemInfo['change'] * $transactionModel->quantity; //盈亏 = （当前取整价格 - 交易价格） X 交易产品变动值 X 订单数量
+        if ($transactionModel->direction != 1) {//买跌，不是买涨，
+            $profitLoss = -$profitLoss;//买跌时盈亏计算取反
+        }
+        $transactionModel->profit_loss = $profitLoss;//盈亏
+
+        $transactionModel->close_type = $transactionInfoArray['close_type'];//关闭类型
+
+        $transactionModel->close_at = $transactionInfoArray['close_at'];//关闭时间
+        $transactionModel->close_price = $transactionInfoArray['close_price'];//关闭价格
+        $transactionModel->save();
+        //$transactionModel->touch('close_at');
+        //$transactionModel->save();
+        //5. 删除Redis中transaction中交易单号信息；
+        $redis->executeCommand('MULTI');//REDIS事务  开始
+        $redis->hdel('transaction', $transactionModel->id);//删除交易表中对应交易单的交易信息
+        $redis->hdel('transaction:'.$transactionInfoArray['user_id'], $transactionModel->id);//删除用户交易表中对应交易单的交易信息
+        //6. 解冻资金，还原可用资金，将盈亏记入资金流水，修改资金总额、可用资金
+        $accountModel = Account::findOne(['user_id' => $transactionModel->user_id]);
+        //解冻资金
+        $redis->hincrby('user:' . $transactionModel->user_id, 'freezing_funds', -$transactionModel->use_funds);
+        $accountModel->freezing_funds -= $transactionModel->use_funds;
+        //还原可用资金
+        $redis->hincrby('user:' . $transactionModel->user_id, 'available_funds', $transactionModel->use_funds);
+        $accountModel->available_funds += $transactionModel->use_funds;
+
+        //将盈亏记入资金流水，
+        $cashFlowModel = new CashFlow();
+        $cashFlowModel->money = $profitLoss;
+        $cashFlowModel->type = '2';
+        $cashFlowModel->user_id = $transactionModel->user_id;
+        $cashFlowModel->transaction_id = $transactionModel->id;
+        $cashFlowModel->remark = date('Y-m-d H:i:s') . $goodsItemInfo['name'] . $goodsItemInfo['size'] . $goodsItemInfo['unit'] . ' ' . $transactionModel->quantity . ' ' . $profitLoss . '元';//备注格式：2016-8-1 12：30：22 白银100g 5手  亏-/盈 100元
+        $cashFlowModel->save();
+        //修改资金总额、可用资金
+        $accountModel->account += $profitLoss;
+        $accountModel->available_funds += $profitLoss;
+        $accountModel->save();
+
+        //7. 修改Redis中user信息：资金总额，可用资金
+        $redis->hincrby('user:' . $transactionModel->user_id, 'account', $profitLoss);//   增加资金总额
+        $redis->hincrby('user:' . $transactionModel->user_id, 'available_funds', $profitLoss);//   增加可用资金
+        //8. 发微信给用户，告知用户订单关闭信息；
+        $redis->executeCommand('EXEC');//redis事务结束
+        $transaction->commit();//mysql事务结束
+        return $cashFlowModel;
+    }
 }

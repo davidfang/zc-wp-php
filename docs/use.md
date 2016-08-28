@@ -1,7 +1,8 @@
 
 ##程序启动事项
 * #### 开启队列守护进程   
->`php yii  queue/listen`
+>`php yii  queue/listen` 可以加上队列名称 ,  默认是对于手机验证码的监听<br>
+>`php yii  queue/listen LossProfit ` 止损止盈队列监听数据  
 
 ----
 ##交易流程
@@ -63,6 +64,15 @@
     * 类型：hash
     * key结构：transaction
     * 示例：transaction
+    
+    |key      |value | 备注 |
+    |------   | ----  | ----|
+    |交易ID   |交易全部信息|对应MYSQL中交易表中对应交易ID的一条记录全部内容转JSON后存储
+   
+ * 用户交易信息表：
+    * 类型：hash
+    * key结构：transaction:用户ID
+    * 示例：transaction:1  transaction:5
     
     |key      |value | 备注 |
     |------   | ----  | ----|

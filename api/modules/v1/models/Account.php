@@ -33,7 +33,8 @@ class Account extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'account', 'in', 'out', 'created_at', 'updated_at'], 'required'],
+            [['user_id'], 'required'],
+            ['user_id', 'unique'],
             [['user_id', 'account', 'in', 'out', 'freezing_funds', 'available_funds', 'created_at', 'updated_at'], 'integer']
         ];
     }
@@ -105,7 +106,26 @@ class Account extends \yii\db\ActiveRecord
         return [
         ];
     }
+    /**生成原始帐户
+     * @param $user_id
+     * @return $this|bool
+     */
+    function generatorAccount($user_id){
+        $this->user_id = $user_id;
+        $this->account = 1000000;
+        $this->freezing_funds = 0;
+        $this->available_funds = 1000000;
 
+        if($this->validate()){
+            $this->save();
+            $redis = Yii::$app->redis;
+            //写入redis
+            $redis->hmset('user:'.$user_id,'account',$this->account,'freezing_funds',$this->freezing_funds,'available_funds',$this->available_funds);
+            return $this;
+        }else{
+            return false;
+        }
+}
     /**
      * 根据用户ID获得用户的账户信息
      * @param $user_id
