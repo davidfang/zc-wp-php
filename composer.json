@@ -21,7 +21,8 @@
 		"kartik-v/yii2-widgets": "*",
         "zc/yii2-rbac": "dev-master",
         "yiisoft/yii2-redis": "^2.0",
-        "wayhood/yii2-queue": "dev-master"
+        "wayhood/yii2-queue": "dev-master",
+        "davidfang/zhi-cai-wx": "dev-master"
     },
     "require-dev": {
         "yiisoft/yii2-codeception": "*",
