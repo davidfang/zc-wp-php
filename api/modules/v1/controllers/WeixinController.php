@@ -15,7 +15,7 @@ use ZhiCaiWX\core\AccessToken;
 use ZhiCaiWX\core;
 use ZhiCaiWX\core\WechatOAuth;
 use ZhiCaiWX\models as ZhiCaiWX_Models;
-use ZhiCaiWX\models\Menu;
+use ZhiCaiWX\models\WxMenu;
 
 class WeixinController extends Controller {
     public function init(){
@@ -26,7 +26,7 @@ class WeixinController extends Controller {
 
         define("WECHAT_URL", 'http://'.$_SERVER["HTTP_HOST"]);
         $cache = \Yii::$app->request->get('cache',false);
-        $wechat_current =  ZhiCaiWX_Models\Wechat::getCurrent($cache);
+        $wechat_current =  ZhiCaiWX_Models\WxWechat::getCurrent($cache);
 
         if($wechat_current){
             define('WECHAT_TOKEN', $wechat_current['Token']);
@@ -66,7 +66,7 @@ class WeixinController extends Controller {
         if (!empty($postStr)) {
             $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
             $msg_type = $postObj->MsgType;
-            $_db_request_log = new ZhiCaiWX_Models\RequestLog() ;// \app\modules\weixin\models\RequestLog();
+            $_db_request_log = new ZhiCaiWX_Models\WxRequestLog() ;// \app\modules\weixin\models\RequestLog();
             $_db_request_log->get = $_SERVER["QUERY_STRING"];
             $_db_request_log->post = $postStr;
             //$_db_request_log->created_at = time();
@@ -217,15 +217,15 @@ class WeixinController extends Controller {
             array('id'=>'7', 'pid'=>'0', 'name'=>'发图发位置', 'type'=>'click', 'code'=>''),
             array('id'=>'8', 'pid'=>'7', 'name'=>'系统拍照发图', 'type'=>'pic_sysphoto', 'code'=>'rselfmenu_1_0'),
             array('id'=>'9', 'pid'=>'7', 'name'=>'拍照或者相册发图', 'type'=>'pic_photo_or_album', 'code'=>'rselfmenu_1_1'),
-            array('id'=>'10', 'pid'=>'7', 'name'=>'微信相册发图', 'type'=>'pic_weixin', 'code'=>'rselfmenu_1_2'),
+            array('id'=>'10', 'pid'=>'7', 'name'=>'微信相册发图', 'type'=>'pic_weixin', 'code'=>'rselfMenu_1_2'),
             array('id'=>'11', 'pid'=>'7', 'name'=>'发送位置', 'type'=>'location_select', 'code'=>'rselfmenu_2_0'),
 
         );
         //从数据库获取菜单，设置菜单
-        $menuList3 = Menu::find()->where(['status'=>'是'])
+        $menuList3 = WxMenu::find()->where(['status'=>'是'])
             ->select(['id', 'pid', 'name', 'type', 'code'])
             ->asArray()->all();
-        //$menuList4 = Menu::findOne(['status'=>'是']);
+        //$menuList4 = WxMenu::findOne(['status'=>'是']);
 
         echo $menuList2==$menuList3 ? '相等':'不相等';
 

@@ -26,6 +26,9 @@ return [
                 ]
             ]
         ],
+        'weixin' => [
+            'class' => 'ZhiCaiWX\Module',
+        ],
     ],
     'components' => [
         'view' => [
