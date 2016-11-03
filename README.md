@@ -1,5 +1,5 @@
 # ace yii
-## Install up:
+### Install up:
 1.  git clone https://github.com/davidfang/ace.git
 2.  运行`composer update --prefer-dist` 安装yii2核心库文件
 3.  创建数据库 `ace` 编码 `utf8-unicode-ci`
